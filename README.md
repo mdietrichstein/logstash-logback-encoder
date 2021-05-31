@@ -1,3 +1,7 @@
+# Logstash Logback Encoder Fork for Android
+
+The dependency on LMAX Disruptor has made the use under Android not feasible. This fork removes said dependency and all related code. As a result, this project no longer contains any appenders. All json encoders are still alive and well however :)
+
 > !! This document applies to the next version under development.
 >
 > &nbsp; &nbsp; See [here for documentation on the latest released version](https://github.com/logstash/logstash-logback-encoder/tree/logstash-logback-encoder-6.6).
