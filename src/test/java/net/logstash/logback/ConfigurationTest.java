@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -13,46 +13,21 @@
  */
 package net.logstash.logback;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.OutputStreamAppender;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.read.ListAppender;
-import net.logstash.logback.appender.AsyncDisruptorAppender;
-import net.logstash.logback.appender.LoggingEventAsyncDisruptorAppender;
-import net.logstash.logback.appender.listener.AppenderListener;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 import net.logstash.logback.argument.StructuredArguments;
 import net.logstash.logback.composite.ContextJsonProvider;
 import net.logstash.logback.composite.GlobalCustomFieldsJsonProvider;
 import net.logstash.logback.composite.JsonProvider;
 import net.logstash.logback.composite.LogstashVersionJsonProvider;
-import net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider;
-import net.logstash.logback.composite.loggingevent.CallerDataJsonProvider;
-import net.logstash.logback.composite.loggingevent.ContextMapJsonProvider;
-import net.logstash.logback.composite.loggingevent.ContextNameJsonProvider;
-import net.logstash.logback.composite.loggingevent.JsonMessageJsonProvider;
-import net.logstash.logback.composite.loggingevent.LogLevelJsonProvider;
-import net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider;
-import net.logstash.logback.composite.loggingevent.LoggerNameJsonProvider;
-import net.logstash.logback.composite.loggingevent.LoggingEventFormattedTimestampJsonProvider;
-import net.logstash.logback.composite.loggingevent.LoggingEventNestedJsonProvider;
-import net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider;
-import net.logstash.logback.composite.loggingevent.LogstashMarkersJsonProvider;
-import net.logstash.logback.composite.loggingevent.MdcJsonProvider;
-import net.logstash.logback.composite.loggingevent.MessageJsonProvider;
-import net.logstash.logback.composite.loggingevent.RawMessageJsonProvider;
-import net.logstash.logback.composite.loggingevent.SequenceJsonProvider;
-import net.logstash.logback.composite.loggingevent.StackTraceJsonProvider;
-import net.logstash.logback.composite.loggingevent.TagsJsonProvider;
-import net.logstash.logback.composite.loggingevent.ThreadNameJsonProvider;
-import net.logstash.logback.composite.loggingevent.UuidProvider;
+import net.logstash.logback.composite.loggingevent.*;
 import net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder;
 import net.logstash.logback.marker.Markers;
 import net.logstash.logback.stacktrace.ShortenedThrowableConverter;
@@ -61,9 +36,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class ConfigurationTest {
 
@@ -101,16 +77,6 @@ public class ConfigurationTest {
 
         verifyOutput(encoder);
     }
-
-    @Test
-    public void testAppenderHasListener() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        LoggingEventAsyncDisruptorAppender appender = getAppender("asyncAppender");
-        Field listenersField = AsyncDisruptorAppender.class.getDeclaredField("listeners");
-        listenersField.setAccessible(true);
-        List<AppenderListener<ILoggingEvent>> listeners = (List<AppenderListener<ILoggingEvent>>) listenersField.get(appender);
-        Assertions.assertEquals(1, listeners.size());
-    }
-
 
     private void verifyCommonProviders(List<JsonProvider<ILoggingEvent>> providers) {
         LoggingEventFormattedTimestampJsonProvider timestampJsonProvider = getInstance(providers, LoggingEventFormattedTimestampJsonProvider.class);
@@ -182,11 +148,11 @@ public class ConfigurationTest {
         LoggingEventPatternJsonProvider patternProvider = getInstance(providers, LoggingEventPatternJsonProvider.class);
         Assertions.assertEquals("{\"patternName\":\"patternValue\",\"relativeTime\":\"#asLong{%relative}\"}", patternProvider.getPattern());
         Assertions.assertNotNull(patternProvider);
-        
+
         LoggingEventNestedJsonProvider nestedJsonProvider = getInstance(providers, LoggingEventNestedJsonProvider.class);
         Assertions.assertNotNull(nestedJsonProvider);
         Assertions.assertEquals("nested", nestedJsonProvider.getFieldName());
-        
+
         RawMessageJsonProvider rawMessageJsonProvider = getInstance(nestedJsonProvider.getProviders().getProviders(), RawMessageJsonProvider.class);
         Assertions.assertNotNull(rawMessageJsonProvider);
         Assertions.assertEquals("customRawMessage", rawMessageJsonProvider.getFieldName());
@@ -216,16 +182,16 @@ public class ConfigurationTest {
 
     private void verifyOutput(LoggingEventCompositeJsonEncoder encoder) throws IOException {
         LOGGER.info(Markers.append("markerFieldName", "markerFieldValue"), "message {} {} {} {}",
-                new Object[] {
-                    "arg",
-                    StructuredArguments.keyValue("k1", "v1"),
-                    StructuredArguments.keyValue("k2", "v2", "{0}=[{1}]"),
-                    StructuredArguments.value("k3", "v3"),
-                    new Throwable()
+                new Object[]{
+                        "arg",
+                        StructuredArguments.keyValue("k1", "v1"),
+                        StructuredArguments.keyValue("k2", "v2", "{0}=[{1}]"),
+                        StructuredArguments.value("k3", "v3"),
+                        new Throwable()
                 });
 
         byte[] encoded = encoder.encode(listAppender.list.get(0));
-        
+
 
         Map<String, Object> output = parseJson(new String(encoded, StandardCharsets.UTF_8));
         Assertions.assertNotNull(output.get("@timestamp"));
@@ -249,7 +215,7 @@ public class ConfigurationTest {
         Assertions.assertEquals("v2", output.get("k2"));
         Assertions.assertEquals("v3", output.get("k3"));
 
-        Number sequence = (Number)output.get("sequenceNumberField");
+        Number sequence = (Number) output.get("sequenceNumberField");
         Assertions.assertNotNull(sequence);
         Assertions.assertNotEquals("", sequence);
         Assertions.assertTrue(0L < sequence.longValue());

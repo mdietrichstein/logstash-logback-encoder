@@ -26,9 +26,6 @@
         <com.fasterxml.jackson.version>2.12.3</com.fasterxml.jackson.version>
         <com.fasterxml.uuid.version>4.0.1</com.fasterxml.uuid.version>
 
-        <!-- shaded runtime dependencies -->
-        <com.lmax.disruptor.version>3.4.4</com.lmax.disruptor.version>
-
         <!-- test dependencies -->
         <junit.version>5.7.1</junit.version>
         <org.assertj.version>3.19.0</org.assertj.version>
@@ -179,11 +176,6 @@
                Only needed if the UuidProvider is used.
             -->
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>${com.lmax.disruptor.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

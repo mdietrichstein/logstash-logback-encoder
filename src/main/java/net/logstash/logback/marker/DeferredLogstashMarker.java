@@ -16,11 +16,9 @@ package net.logstash.logback.marker;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import ch.qos.logback.classic.AsyncAppender;
-import net.logstash.logback.appender.AsyncDisruptorAppender;
 import org.slf4j.Marker;
 
 import com.fasterxml.jackson.core.JsonGenerator;
